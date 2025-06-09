@@ -3,7 +3,7 @@
 #ifndef CHUNK_H
 #define CHUNK_H
 
-// #define TINYOBJLOADER_IMPLEMENTATION
+#define MODEL_DIR "./assets/models/"
 #include <tiny_obj_loader.h>
 
 #include <block.h>

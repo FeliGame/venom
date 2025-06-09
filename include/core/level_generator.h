@@ -148,9 +148,9 @@ static inline BLOCK_ENUM generate_skyblock(int x, int y, int z)
 }
 
 // 首次启动时导入模型数据
-std::unordered_map<std::string, std::vector<tinyobj::shape_t>> __model_shapes; // mesh.indices存储面的网格数据（顶点/法线/纹理索引）
-std::unordered_map<std::string, tinyobj::attrib_t> __model_attributes;         // 存储顶点信息、法线信息、纹理映射信息等
-std::unordered_map<std::string, std::vector<BLOCK_ENUM>> __model_block_kinds;  // png图片存储的方块种类信息
+static std::unordered_map<std::string, std::vector<tinyobj::shape_t>> __model_shapes; // mesh.indices存储面的网格数据（顶点/法线/纹理索引）
+static std::unordered_map<std::string, tinyobj::attrib_t> __model_attributes;         // 存储顶点信息、法线信息、纹理映射信息等
+static std::unordered_map<std::string, std::vector<BLOCK_ENUM>> __model_block_kinds;  // png图片存储的方块种类信息
 
 // 加载.obj模型文件和材质png
 static void import_model_resources()

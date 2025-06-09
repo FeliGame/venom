@@ -1,16 +1,12 @@
-#define SHADER_DIR "./assets/shaders/"
-#define TEXTURE_DIR "./assets/textures/"
-#define MODEL_DIR "./assets/models/"
-
 #include <vk_engine.h>
 
 int main()
 {
-    VenomApp app;
-    
+    VenomApp* app = new VenomApp();
+
     try
     {
-        app.run();
+        app->run();
     }
     catch (const std::exception &e)
     {
