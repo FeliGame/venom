@@ -1,5 +1,5 @@
-#ifndef WORLD_GENERATOR_H
-#define WORLD_GENERATOR_H
+#ifndef LEVEL_GENERATOR_H
+#define LEVEL_GENERATOR_H
 
 #include <chunk.h>
 
@@ -483,4 +483,4 @@ static Chunk *generate_chunk(int cx, int cy, int cz, bool constructing)
     return chunk;
 }
 
-#endif /* WORLD_GENERATOR_H */
+#endif /* LEVEL_GENERATOR_H */

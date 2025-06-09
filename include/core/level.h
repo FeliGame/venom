@@ -2,7 +2,7 @@
 #ifndef LEVEL_H
 #define LEVEL_H
 
-#include <world_generator.h>
+#include <level_generator.h>
 #include <chrono>
 
 static std::chrono::high_resolution_clock::time_point __clock_game_start, __clock_game_end; // 游戏启动和关闭时间

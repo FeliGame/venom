@@ -41,7 +41,6 @@
 #include <cmath>
 #include <functional>
 
-// chunk.hpp中已经定义过一次了
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
 
@@ -1311,7 +1310,5 @@ private:
         }
     }
 };
-
-static VenomApp app;
 
 #endif // VK_ENGINE_H

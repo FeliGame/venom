@@ -6,6 +6,8 @@
 
 int main()
 {
+    VenomApp app;
+    
     try
     {
         app.run();
