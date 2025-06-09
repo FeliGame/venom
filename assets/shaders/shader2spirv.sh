@@ -48,5 +48,3 @@ if [ "$compile_failed" = true ]; then
     echo "Shaders Compilation failed"
     exit 1
 fi
-
-echo "Shaders Compilation successful"

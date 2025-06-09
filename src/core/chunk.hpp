@@ -4,11 +4,11 @@
 #define CHUNK_H
 
 // #define TINYOBJLOADER_IMPLEMENTATION
-#include "tiny_obj_loader.h"
+#include <tiny_obj_loader.h>
 
-#include "block.hpp"
-#include "noise.hpp"
-#include "spline.hpp"
+#include <block.hpp>
+#include <noise.hpp>
+#include <spline.hpp>
 
 // 读取纹理png需要使用
 #define STB_IMAGE_IMPLEMENTATION

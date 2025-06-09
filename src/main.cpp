@@ -2,7 +2,7 @@
 #define TEXTURE_DIR "./assets/textures/"
 #define MODEL_DIR "./assets/models/"
 
-#include "vk_engine.hpp"
+#include <vk_engine.hpp>
 
 int main()
 {

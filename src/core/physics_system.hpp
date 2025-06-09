@@ -1,7 +1,7 @@
 #ifndef PHYSICS_SYSTEM_H
 #define PHYSICS_SYSTEM_H
 
-#include "camera.hpp"
+#include <camera.hpp>
 #include <cmath>
 
 static bool PLAYER_PHYSICS = true; // 玩家的物理碰撞、重力
