@@ -3,7 +3,7 @@
 
 #include <vector>
 #include <vk_types.h>
-#include <vk_mesh.hpp>
+#include <vk_mesh.h>
 #include <unordered_map>
 
 // 【枚举值排列必须严格遵照材质包顺序（先行后列）】

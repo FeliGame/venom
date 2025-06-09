@@ -3,12 +3,12 @@
 
 #define GLM_ENABLE_EXPERIMENTAL
 
-#include <render_system.hpp>
-#include <vk_init.hpp>
-#include <window_system.hpp>
-#include <physics_system.hpp>
-#include <camera.hpp>
-#include <input_system.hpp>
+#include <render_system.h>
+#include <vk_init.h>
+#include <window_system.h>
+#include <physics_system.h>
+#include <camera.h>
+#include <input_system.h>
 #include <cmath>
 
 // #define VK_USE_PLATFORM_METAL_EXT
@@ -19,7 +19,7 @@
 // 顶点缓冲需要分配内存（AMD的VMA库）
 #define VMA_IMPLEMENTATION
 #include <vma/vk_mem_alloc.h>
-#include <vk_mesh.hpp>
+#include <vk_mesh.h>
 // #include <vk_textures.hpp>
 
 #include <GLFW/glfw3.h> //负责前端窗口管理

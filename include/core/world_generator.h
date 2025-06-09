@@ -1,7 +1,7 @@
 #ifndef WORLD_GENERATOR_H
 #define WORLD_GENERATOR_H
 
-#include <chunk.hpp>
+#include <chunk.h>
 
 #define GENERATE_VEIN false
 #define GENERATE_CAVE true

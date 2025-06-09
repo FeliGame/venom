@@ -4,10 +4,10 @@
 #define CAMERA_H
 
 #include <glm/gtx/transform.hpp>
-#include <window_system.hpp>
-#include <physics_entity.hpp>
-#include <level.hpp>
-#include <player.hpp>
+#include <window_system.h>
+#include <physics_entity.h>
+#include <level.h>
+#include <player.h>
 #include <iostream>
 
 static uint32_t MAX_WIDTH = 800;
