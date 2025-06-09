@@ -39,20 +39,20 @@ public:
             z = std::min(xz_size - d, std::max(d, z));
 
             // 方块碰撞
-            if ((player.v.x > 0 && !Chunk::is_air_block(x + d, y, z)) ||
-                (player.v.x < 0 && !Chunk::is_air_block(x - d, y, z)))
+            if ((player.v.x > 0 && !is_air_block(x + d, y, z)) ||
+                (player.v.x < 0 && !is_air_block(x - d, y, z)))
             {
                 __main_camera.entity.v.x = 0;
                 __main_camera.entity.pos.x = player_last_pos.x;
             }
-            if ((player.v.y > 0 && !Chunk::is_air_block(x, y + 1, z)) || // 头顶
-                (player.v.y < 0 && !Chunk::is_air_block(x, y - h, z)))
+            if ((player.v.y > 0 && !is_air_block(x, y + 1, z)) || // 头顶
+                (player.v.y < 0 && !is_air_block(x, y - h, z)))
             {
                 __main_camera.entity.v.y = 0;
                 __main_camera.entity.pos.y = player_last_pos.y;
             }
-            if ((player.v.z > 0 && !Chunk::is_air_block(x, y, z + d)) ||
-                (player.v.z < 0 && !Chunk::is_air_block(x, y, z - d)))
+            if ((player.v.z > 0 && !is_air_block(x, y, z + d)) ||
+                (player.v.z < 0 && !is_air_block(x, y, z - d)))
             {
                 __main_camera.entity.v.z = 0;
                 __main_camera.entity.pos.z = player_last_pos.z;

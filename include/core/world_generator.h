@@ -158,20 +158,20 @@ static void import_model_resources()
     std::vector<tinyobj::material_t> materials;
     std::string warn, err;
     std::string model_name = "monu1"; // 【应当从配置文件读取】
-    if (!tinyobj::LoadObj(&__model_attributes[model_name], &__model_shapes[model_name], &materials, &warn, &err, (string(MODEL_DIR) + model_name + ".obj").c_str(), MODEL_DIR))
+    if (!tinyobj::LoadObj(&__model_attributes[model_name], &__model_shapes[model_name], &materials, &warn, &err, (std::string(MODEL_DIR) + model_name + ".obj").c_str(), MODEL_DIR))
     {
         throw std::runtime_error(err);
     }
-    cout << "Loaded obj warning: " << warn;
+    std::cout << "Loaded obj warning: " << warn;
     printf(" and vertices cnt: %lu\n", __model_attributes[model_name].vertices.size());
 
     // 从专用模型纹理png读取颜色值（分辨率必须是256*1），然后转换为Block Kind
-    std::string png_file = string(MODEL_DIR) + model_name + ".png";
+    std::string png_file = std::string(MODEL_DIR) + model_name + ".png";
     int texWidth, texHeight, texChannels;
     auto pixels = stbi_load(png_file.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
     if (!pixels)
     {
-        std::cout << "Failed to load model png " << png_file << endl;
+        std::cout << "Failed to load model png " << png_file << std::endl;
         return;
     }
     if (texWidth != 256 || texHeight != 1)
@@ -227,7 +227,7 @@ static void generate_straight_road(glm::ivec2 xz_start, glm::ivec2 xz_end, int h
                     std::cerr << "Out of border!\n";
                 }
                 // 再填充方块
-                Chunk::create_block(pos, BLOCK_COBBLE_STONE, true, chunk);
+                create_block(pos, BLOCK_COBBLE_STONE, true, chunk);
             }
         }
     }
@@ -258,7 +258,7 @@ static void generate_straight_road(glm::ivec2 xz_start, glm::ivec2 xz_end, int h
                     std::cerr << "Out of border!\n";
                 }
                 // 再填充方块
-                Chunk::create_block(pos, BLOCK_COBBLE_STONE, true, chunk);
+                create_block(pos, BLOCK_COBBLE_STONE, true, chunk);
             }
         }
     }
@@ -315,7 +315,7 @@ static void generate_building(int x, int y, int z, const char *model_name, float
                             std::cerr << "Out of border!\n";
                         }
                         // 再填充方块
-                        Chunk::create_block(glm::ivec3(w_pos), __model_block_kinds[model_name][index.texcoord_index], false, chunk); // 不替换方块，允许自然地形和其他建筑侵入
+                        create_block(glm::ivec3(w_pos), __model_block_kinds[model_name][index.texcoord_index], false, chunk); // 不替换方块，允许自然地形和其他建筑侵入
                     }
                 }
             }
@@ -360,7 +360,7 @@ static Chunk *generate_chunk(int cx, int cy, int cz, bool constructing)
 {
     if (cx < 0 || cy < 0 || cz < 0)
         return nullptr;
-    Chunk *chunk = Chunk::get_chunk(cx, cy, cz);
+    Chunk *chunk = get_chunk(cx, cy, cz);
     if (chunk)
     {
         if (constructing)
@@ -371,7 +371,7 @@ static Chunk *generate_chunk(int cx, int cy, int cz, bool constructing)
     }
 
     // 创建区块，新建的地事先声明用作建筑用地
-    chunk = Chunk::set_chunk(cx, cy, cz, new Chunk(cx, cy, cz, constructing));
+    chunk = set_chunk(cx, cy, cz, new Chunk(cx, cy, cz, constructing));
 
     int x_min = cx * CHUNK_LEN;
     int y_min = cy * CHUNK_LEN;
@@ -388,7 +388,7 @@ static Chunk *generate_chunk(int cx, int cy, int cz, bool constructing)
             int ym = std::min(y_max, terrain_base_height(x, z));
             for (int y = cy * CHUNK_LEN; y < ym; ++y)
             {
-                Chunk::create_block(glm::ivec3(x, y, z), BLOCK_STONE, false, chunk);
+                create_block(glm::ivec3(x, y, z), BLOCK_STONE, false, chunk);
             }
         }
     }
@@ -405,10 +405,10 @@ static Chunk *generate_chunk(int cx, int cy, int cz, bool constructing)
             {
                 if (y >= th - 1)
                 { // 覆草【应当在挖空的逻辑之后做！】
-                    Chunk::create_block(glm::ivec3(x, y, z), BLOCK_GRASS, true, chunk);
+                    create_block(glm::ivec3(x, y, z), BLOCK_GRASS, true, chunk);
                     break;
                 }
-                Chunk::create_block(glm::ivec3(x, y, z), BLOCK_DIRT, false, chunk);
+                create_block(glm::ivec3(x, y, z), BLOCK_DIRT, false, chunk);
             }
         }
     }
@@ -424,7 +424,7 @@ static Chunk *generate_chunk(int cx, int cy, int cz, bool constructing)
                 int vein_y_min = std::max(y_min, 1), vein_y_max = std::min(y_max, 20);
                 for (int y = vein_y_min; y < vein_y_max; ++y)
                 {
-                    Chunk::create_block(glm::ivec3(x, y, z),
+                    create_block(glm::ivec3(x, y, z),
                                  generate_vein_block(x, y, z), true, chunk);
                 }
             }
@@ -434,7 +434,7 @@ static Chunk *generate_chunk(int cx, int cy, int cz, bool constructing)
                 int cave_y_min = std::max(y_min, 1), cave_y_max = std::min(y_max, 50);
                 for (int y = cave_y_min; y < cave_y_max; ++y)
                 {
-                    Chunk::create_block(glm::ivec3(x, y, z),
+                    create_block(glm::ivec3(x, y, z),
                                  generate_cave_block(x, y, z), true, chunk);
                 }
             }
@@ -444,7 +444,7 @@ static Chunk *generate_chunk(int cx, int cy, int cz, bool constructing)
                 int skyblock_y_min = std::max(y_min, 80), skyblock_y_max = std::min(y_max, 128);
                 for (int y = skyblock_y_min; y < skyblock_y_max; ++y)
                 {
-                    Chunk::create_block(glm::ivec3(x, y, z),
+                    create_block(glm::ivec3(x, y, z),
                                  generate_skyblock(x, y, z), true, chunk);
                 }
             }
@@ -462,7 +462,7 @@ static Chunk *generate_chunk(int cx, int cy, int cz, bool constructing)
     {
         for (int x = x_min; x < x_max; ++x)
             for (int z = z_min; z < z_max; ++z)
-                Chunk::create_block(glm::ivec3(x, 0, z), BLOCK_BEDROCK, true, chunk);
+                create_block(glm::ivec3(x, 0, z), BLOCK_BEDROCK, true, chunk);
     }
 
     // 开辟该区块的剩余所有方块

@@ -77,46 +77,14 @@ public:
     BLOCK_ENUM kind;                // 种类id
     bool transparent;               // 是否透明
 
-    Block(int p_x, int p_y, int p_z, BLOCK_ENUM p_kind) : pos(glm::ivec3(p_x, p_y, p_z)), kind(p_kind)
-    {
-        memset(face_id, FACE_UNRENDERED, sizeof(face_id));
-        if (kind == BLOCK_SPIDER_WEB || kind == BLOCK_ROSE || kind == BLOCK_YELLOW_FLOWER)
-            transparent = true;
-        else
-            transparent = false;
-    }
-    Block(glm::ivec3 p_pos, BLOCK_ENUM p_kind) : pos(p_pos), kind(p_kind)
-    {
-        memset(face_id, FACE_UNRENDERED, sizeof(face_id));
-        if (kind == BLOCK_SPIDER_WEB || kind == BLOCK_ROSE || kind == BLOCK_YELLOW_FLOWER)
-            transparent = true;
-        else
-            transparent = false;
-    }
+    Block(int p_x, int p_y, int p_z, BLOCK_ENUM p_kind);
+    Block(glm::ivec3 p_pos, BLOCK_ENUM p_kind);
 };
 
 // 【模型导入】颜色->Block种类映射关系
+extern std::unordered_map<unsigned, BLOCK_ENUM> __argb2block; // 声明外部变量
 
-static std::unordered_map<unsigned, BLOCK_ENUM> __argb2block; // 颜色到Block种类的映射关系，除了下面两个函数不要直接访问该map！！！
-
-static inline void init_fixed_argb2block()
-{
-
-    // 导入参考下列例子，十六进制从左往右依次是ARGB
-    //    __argb2block[0xFF949494] = BLOCK_CLAY;
-    //    __argb2block[0xFF7E7E7E] = BLOCK_COBBLE_STONE;
-    //    __argb2block[0xFF865C42] = BLOCK_DIRT;
-}
-
-// isRandom随机一一映射，根据材质颜色随机分配rgb
-static inline BLOCK_ENUM get_argb2block(unsigned argb, bool isRandom)
-{
-    if (isRandom && __argb2block.find(argb) == __argb2block.end())
-    {
-        // 颜色键不存在值，插入一个随机值
-        __argb2block[argb] = static_cast<BLOCK_ENUM>(rand() % 128); // 随机范围对应方块枚举最大值
-    }
-    return __argb2block[argb];
-}
+void init_fixed_argb2block();
+BLOCK_ENUM get_argb2block(unsigned argb, bool isRandom);
 
 #endif /* BLOCK_H */

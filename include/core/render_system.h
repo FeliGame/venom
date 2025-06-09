@@ -177,7 +177,7 @@ public:
             glm::ivec3 near_pos = block->pos + BLOCK_DIR[i]; // 邻近该方向的方块位置
             if (near_pos.x >= 0 && near_pos.y >= 0 && near_pos.z >= 0)
             {
-                Block *near_block = Chunk::get_block(near_pos);
+                Block *near_block = get_block(near_pos);
                 if (!near_block || near_block->kind == BLOCK_AIR)
                 { // 没有方块邻近，渲染该面
                     render_face(block, i);
@@ -195,7 +195,7 @@ public:
     // 移除方块，并更新附近方块的面，【只push_back，导致的一些空内存可以交给区块更新时整理】
     void unrender_block(glm::ivec3 pos)
     {
-        Block *block = Chunk::get_block(pos);
+        Block *block = get_block(pos);
         if (block == nullptr || block->kind == BLOCK_AIR)
             return;
 
@@ -211,7 +211,7 @@ public:
             glm::ivec3 near_pos = pos + BLOCK_DIR[i]; // 邻近该方向的方块位置
             if (near_pos.x >= 0 && near_pos.y >= 0 && near_pos.z >= 0)
             {
-                Block *near_block = Chunk::get_block(near_pos);
+                Block *near_block = get_block(near_pos);
                 if (!near_block || near_block->kind == BLOCK_AIR)
                     continue;
                 // 如果邻近的方块是透明的，它贴图本身没有被删除，因此不用再渲染
@@ -230,7 +230,7 @@ public:
     {
         if (rx < 0 || ry < 0 || rz < 0)
             return;
-        Chunk *chunk = Chunk::get_chunk(rx, ry, rz);
+        Chunk *chunk = get_chunk(rx, ry, rz);
         if (!chunk)
         {
             chunk = generate_chunk(rx, ry, rz, false);
@@ -283,7 +283,7 @@ public:
     // 重新渲染玩家【附近】所有区块
     void render_all_chunks(glm::vec3 player_pos, bool rerender)
     {
-        vector<RenderObject>().swap(__renderables); // 清空并释放所有空间
+        std::vector<RenderObject>().swap(__renderables); // 清空并释放所有空间
         int rx = (int)player_pos.x / CHUNK_LEN;
         int ry = (int)player_pos.y / CHUNK_LEN;
         int rz = (int)player_pos.z / CHUNK_LEN;

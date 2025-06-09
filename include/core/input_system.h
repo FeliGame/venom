@@ -138,7 +138,7 @@ static void get_input()
         if (pick_pos != POINT_NOTHING)
         {
             __render_system.unrender_block(glm::ivec3(pick_pos));
-            Chunk::create_block(glm::ivec3(pick_pos), BLOCK_AIR, true, nullptr); // 清理原方块内存数据
+            create_block(glm::ivec3(pick_pos), BLOCK_AIR, true, nullptr); // 清理原方块内存数据
         }
     }
 
@@ -147,7 +147,7 @@ static void get_input()
         glm::vec3 pick_pos = __main_camera.point_at(true);
         if (pick_pos != POINT_NOTHING)
         {
-            Block *block = Chunk::create_block(glm::ivec3(pick_pos), __player.hold_block, false, nullptr);
+            Block *block = create_block(glm::ivec3(pick_pos), __player.hold_block, false, nullptr);
             __render_system.render_block(block);
         }
     }

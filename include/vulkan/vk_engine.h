@@ -42,8 +42,8 @@
 #include <functional>
 
 // chunk.hpp中已经定义过一次了
-// #define STB_IMAGE_IMPLEMENTATION
-// #include <stb_image.h>
+#define STB_IMAGE_IMPLEMENTATION
+#include <stb_image.h>
 
 // 用于计算帧率
 static std::chrono::high_resolution_clock::time_point clock_early, clock_late;

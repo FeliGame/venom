@@ -176,7 +176,7 @@ public:
             if (x < 0 || y < 0 || z < 0)
                 return POINT_NOTHING;
 
-            if (!Chunk::is_air_block(x, y, z))
+            if (!is_air_block(x, y, z))
             {
                 if (!place_block)
                     return fact; // 破坏这一格
