@@ -1,5 +1,5 @@
-#ifndef input_system_h
-#define input_system_h
+#ifndef INPUT_SYSTEM_H
+#define INPUT_SYSTEM_H
 
 #include "window_system.hpp"
 
@@ -270,4 +270,4 @@ static void get_input()
     }
 }
 
-#endif /* input_system_h */
+#endif /* INPUT_SYSTEM_H */

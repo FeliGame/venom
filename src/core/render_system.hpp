@@ -1,7 +1,7 @@
 // 管理渲染管线和material、对象创建和场景绘制
 
-#ifndef render_system_hpp
-#define render_system_hpp
+#ifndef RENDER_SYSTEM_H
+#define RENDER_SYSTEM_H
 
 #include "level.hpp"
 #include <unordered_map>
@@ -372,4 +372,4 @@ public:
 
 static RenderSystem __render_system; // 场景、对象管理器
 
-#endif /* render_system_hpp */
+#endif /* RENDER_SYSTEM_H */

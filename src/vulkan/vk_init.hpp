@@ -1,5 +1,5 @@
-#ifndef vk_init_hpp
-#define vk_init_hpp
+#ifndef VK_INIT_H
+#define VK_INIT_H
 
 #include <vk_types.h>
 
@@ -388,4 +388,4 @@ VkFramebufferCreateInfo vkinit::framebuffer_create(VkRenderPass renderPass, VkEx
     return ret;
 }
 
-#endif /* vk_init_hpp */
+#endif /* VK_INIT_H */

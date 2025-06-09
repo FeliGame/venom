@@ -1,5 +1,5 @@
-#ifndef block_hpp
-#define block_hpp
+#ifndef BLOCK_H
+#define BLOCK_H
 
 #include <vector>
 #include <vk_types.h>
@@ -119,4 +119,4 @@ static inline BLOCK_ENUM get_argb2block(unsigned argb, bool isRandom)
     return __argb2block[argb];
 }
 
-#endif /* block_hpp */
+#endif /* BLOCK_H */

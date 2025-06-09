@@ -1,5 +1,5 @@
-#ifndef world_generator_hpp
-#define world_generator_hpp
+#ifndef WORLD_GENERATOR_H
+#define WORLD_GENERATOR_H
 #include "chunk.hpp"
 
 #define GENERATE_VEIN false
@@ -484,4 +484,4 @@ static Chunk *generate_chunk(int cx, int cy, int cz, bool constructing)
 
 
 
-#endif /* world_generator_hpp */
+#endif /* WORLD_GENERATOR_H */

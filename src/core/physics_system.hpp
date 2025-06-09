@@ -1,5 +1,5 @@
-#ifndef physics_system_hpp
-#define physics_system_hpp
+#ifndef PHYSICS_SYSTEM_H
+#define PHYSICS_SYSTEM_H
 
 #include "camera.hpp"
 #include <cmath>
@@ -77,4 +77,4 @@ public:
 
 static PhysicsSystem __physics_system;
 
-#endif /* physics_system_hpp */
+#endif /* PHYSICS_SYSTEM_H */

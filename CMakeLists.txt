@@ -42,11 +42,12 @@ include_directories(${MATH_DIR})
 include_directories(${VULKAN_DIR})
 include_directories(${THIRD_PARTY_DIR})
 
-# 添加源文件
+# 收集目录中所有 .cpp 文件
+file(GLOB THIRD_PARTY_SOURCES ${THIRD_PARTY_DIR}/*.cpp)
+file(GLOB_RECURSE SRC_SOURCES ${SRC_DIR}/*.cpp)
 add_executable(Venom 
-    ${THIRD_PARTY_DIR}/VkBootstrap.cpp
-    ${VULKAN_DIR}/vk_engine.hpp
-    ${SRC_DIR}/main.cpp
+    ${THIRD_PARTY_SOURCES}
+    ${SRC_SOURCES}
     )
 
 if(APPLE)

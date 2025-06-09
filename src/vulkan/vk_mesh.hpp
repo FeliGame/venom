@@ -1,5 +1,5 @@
-#ifndef vk_mesh_hpp
-#define vk_mesh_hpp
+#ifndef VK_MESH_H
+#define VK_MESH_H
 
 /// 本文件负责掌管点Vertex - 格Mesh - 体RenderObject
 
@@ -183,4 +183,4 @@ struct RenderObject
     glm::vec3 normal;
 };
 
-#endif /* vk_mesh_hpp */
+#endif /* VK_MESH_H */

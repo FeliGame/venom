@@ -1,6 +1,6 @@
 // 每个世界的信息
-#ifndef level_hpp
-#define level_hpp
+#ifndef LEVEL_H
+#define LEVEL_H
 
 #include "world_generator.hpp"
 #include <chrono>
@@ -29,4 +29,4 @@ public:
 
 static Level __main_level;
 
-#endif /* level_hpp */
+#endif /* LEVEL_H */

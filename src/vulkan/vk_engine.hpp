@@ -1,5 +1,5 @@
-#ifndef vk_engine_hpp
-#define vk_engine_hpp
+#ifndef VK_ENGINE_H
+#define VK_ENGINE_H
 
 #define GLM_ENABLE_EXPERIMENTAL
 
@@ -1314,4 +1314,4 @@ private:
 
 static VenomApp app;
 
-#endif // vk_engine_hpp
+#endif // VK_ENGINE_H

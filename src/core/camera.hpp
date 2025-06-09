@@ -1,7 +1,7 @@
 // 控制相机的各种行为
 
-#ifndef camera_hpp
-#define camera_hpp
+#ifndef CAMERA_H
+#define CAMERA_H
 
 #include <glm/gtx/transform.hpp>
 #include "window_system.hpp"
@@ -193,4 +193,4 @@ public:
 
 static Camera __main_camera;                                                                           // 主相机
 
-#endif /* camera_hpp */
+#endif /* CAMERA_H */

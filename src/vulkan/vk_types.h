@@ -1,5 +1,5 @@
-#ifndef vk_types_h
-#define vk_types_h
+#ifndef VK_TYPES_H
+#define VK_TYPES_H
 #include "vulkan/vulkan.h"
 #include <vma/vk_mem_alloc.h>
 #include <glm/glm.hpp> //线性代数（向量、矩阵）
@@ -87,4 +87,4 @@ struct Material
     VkPipelineLayout pipelineLayout;
 };
 
-#endif /* vk_types_h */
+#endif /* VK_TYPES_H */

@@ -1,7 +1,7 @@
 // 各种样条曲线，定义域和值域为[-1, 1]
 
-#ifndef spline_hpp
-#define spline_hpp
+#ifndef SPLINE_H
+#define SPLINE_H
 
 namespace spline
 {
@@ -33,4 +33,4 @@ namespace spline
     }
 
 };
-#endif /* spline_hpp */
+#endif /* SPLINE_H */

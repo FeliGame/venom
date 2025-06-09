@@ -1,5 +1,5 @@
-#ifndef player_hpp
-#define player_hpp
+#ifndef PLAYER_H
+#define PLAYER_H
 
 #include <glm/glm.hpp>
 
@@ -13,4 +13,4 @@ public:
 
 static Player __player;
 
-#endif /* player_hpp */
+#endif /* PLAYER_H */

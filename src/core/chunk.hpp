@@ -1,13 +1,12 @@
 // 区块操作
 
-#ifndef chunk_hpp
-#define chunk_hpp
+#ifndef CHUNK_H
+#define CHUNK_H
 
 // #define TINYOBJLOADER_IMPLEMENTATION
 #include "tiny_obj_loader.h"
 
 #include "block.hpp"
-#include "eblock.hpp"
 #include "noise.hpp"
 #include "spline.hpp"
 
@@ -173,4 +172,4 @@ public:
     }
 };
 
-#endif /* chunk_hpp */
+#endif /* CHUNK_H */

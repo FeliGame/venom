@@ -1,5 +1,5 @@
-#ifndef noise_hpp
-#define noise_hpp
+#ifndef NOISE_H
+#define NOISE_H
 
 #include <glm/glm.hpp>
 
@@ -153,4 +153,4 @@ inline float perlinNoise3D(vec3 p)
     return surfletSum;
 }
 
-#endif /* noise_hpp */
+#endif /* NOISE_H */

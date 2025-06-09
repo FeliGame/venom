@@ -1,5 +1,5 @@
-#ifndef utils_hpp
-#define utils_hpp
+#ifndef UTILS_H
+#define UTILS_H
 
 #include <glm/glm.hpp>
 
@@ -22,4 +22,4 @@ static const glm::ivec3 ADJACENT_VEC3[] = {
     {0, 0, 1}  
 };
 
-#endif /* utils_hpp */
+#endif /* UTILS_H */

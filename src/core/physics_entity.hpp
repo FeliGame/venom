@@ -1,6 +1,6 @@
 // 执行物理仿真的每个实体
-#ifndef physics_entity_hpp
-#define physics_entity_hpp
+#ifndef PHYSICS_ENTITY_H
+#define PHYSICS_ENTITY_H
 
 #include <glm/gtx/transform.hpp>
 
@@ -15,4 +15,4 @@ struct PhysicsEntity
     int d = 1; // 直径
 };
 
-#endif /* physics_entity_hpp */
+#endif /* PHYSICS_ENTITY_H */
