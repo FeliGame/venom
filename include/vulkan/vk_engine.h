@@ -653,7 +653,7 @@ private:
         // we don't use multisampling, so just run the default one
         pipelineBuilder._multisampling = vkinit::multisampling_state_create_info();
         // a single blend attachment with no blending and writing to RGBA
-        pipelineBuilder._colorBlendAttachment = vkinit::color_blend_attachment_enable_state(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA);
+        pipelineBuilder._colorBlendAttachment = vkinit::color_blend_attachment_enable_state(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD);
         pipelineBuilder._depthStencil = vkinit::depth_stencil_create_info(true, true, VK_COMPARE_OP);
 
         // 构建texture管线，主要是使用的片元着色器不同

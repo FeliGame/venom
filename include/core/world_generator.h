@@ -483,6 +483,4 @@ static Chunk *generate_chunk(int cx, int cy, int cz, bool constructing)
     return chunk;
 }
 
-
-
 #endif /* WORLD_GENERATOR_H */
