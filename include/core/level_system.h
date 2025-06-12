@@ -1,13 +1,30 @@
-#ifndef LEVEL_GENERATOR_H
-#define LEVEL_GENERATOR_H
+// 每个世界的信息
+#ifndef LEVEL_SYSTEM_H
+#define LEVEL_SYSTEM_H
 
 #include <chunk.h>
+#include <noise.h>
+#include <spline.h>
+#include <chrono>
+
+static std::chrono::high_resolution_clock::time_point __clock_game_start, __clock_game_end; // 游戏启动和关闭时间
+static float PI = 3.1415926536f;
+
+class LevelSystem
+{
+public:
+    glm::vec4 sky_color{1.0f, 1.0f, 1.0f, 0.0f}; // 天空颜色，w无用
+
+    void update_sky_color();
+};
+
+static LevelSystem __main_level;
+
 
 #define GENERATE_VEIN false
 #define GENERATE_CAVE true
 #define GENERATE_SKYBLOCK false
 #define GENERATE_BUILDING false
-
 
 static Chunk *generate_chunk(int cx, int cy, int cz, bool constructing);
 
@@ -483,4 +500,4 @@ static Chunk *generate_chunk(int cx, int cy, int cz, bool constructing)
     return chunk;
 }
 
-#endif /* LEVEL_GENERATOR_H */
+#endif /* LEVEL_SYSTEM_H */

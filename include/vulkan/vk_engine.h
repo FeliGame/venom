@@ -4,11 +4,8 @@
 #define SHADER_DIR "./assets/shaders/"
 #define TEXTURE_DIR "./assets/textures/"
 
-#include <render_system.h>
 #include <vk_init.h>
-#include <window_system.h>
 #include <physics_system.h>
-#include <camera.h>
 #include <input_system.h>
 #include <cmath>
 
@@ -19,7 +16,6 @@
 
 // 顶点缓冲需要分配内存（AMD的VMA库）
 #include <vma/vk_mem_alloc.h>
-#include <vk_mesh.h>
 
 #include <GLFW/glfw3.h> //负责前端窗口管理
 #include <GLFW/glfw3native.h>

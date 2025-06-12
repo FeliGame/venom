@@ -3,12 +3,7 @@
 #ifndef CHUNK_H
 #define CHUNK_H
 
-#define MODEL_DIR "./assets/models/"
-#include <tiny_obj_loader.h>
-
 #include <block.h>
-#include <noise.h>
-#include <spline.h>
 
 // 读取纹理png需要使用
 #include <stb_image.h>

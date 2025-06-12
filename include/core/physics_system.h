@@ -3,6 +3,7 @@
 
 #include <camera.h>
 #include <cmath>
+#include <render_system.h>
 
 static bool PLAYER_PHYSICS = true; // 玩家的物理碰撞、重力
 

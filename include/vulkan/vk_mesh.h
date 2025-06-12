@@ -1,6 +1,7 @@
 #ifndef VK_MESH_H
 #define VK_MESH_H
 
+#define MODEL_DIR "./assets/models/"
 /// 本文件负责掌管点Vertex - 格Mesh - 体RenderObject
 
 #include <vk_types.h>

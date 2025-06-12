@@ -1,8 +1,6 @@
 #ifndef INPUT_SYSTEM_H
 #define INPUT_SYSTEM_H
 
-#include <window_system.h>
-
 #include <GLFW/glfw3.h> //负责前端窗口管理
 #include <GLFW/glfw3native.h>
 #include <iostream>

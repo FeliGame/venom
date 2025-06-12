@@ -73,7 +73,7 @@ public:
     glm::ivec3 pos;        // 所处坐标
     RenderObject faces[6]; // 6个渲染面依次是frubld，在不可直视面渲染时，可以裁剪掉这部分面以提升性能
     int face_id[6];
-    float brightness = LIGHT_SCALE; // 该方块的光照强度
+    float brightness; // 该方块的光照强度
     BLOCK_ENUM kind;                // 种类id
     bool transparent;               // 是否透明
 
