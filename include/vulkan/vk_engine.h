@@ -95,7 +95,7 @@ using namespace std;
         }                                                               \
     } while (0)
 
-const int MAX_FRAMES_IN_FLIGHT = 2; // 一次性加载的帧数（不会因为渲染当前帧而打扰下一帧的录入，选2可以防止CPU过于超过GPU进度）
+const int MAX_FRAMES_IN_FLIGHT = 3; // 一次性加载的帧数（不会因为渲染当前帧而打扰下一帧的录入，建议与_swapchain_images.size()保持一致）
 const int UNIFORM_BUFFERS_CNT = 10;
 const int MAX_OBJECTS = 1e6; // 每帧最大渲染物体数量，虚幻引擎采用动态扩展上限技术（场景物体越多，该数值越大）
 // 目前的代码逻辑下，如果该数值少于场景内物体数量且开启多重缓冲，则会发生屏闪（猜测是因为每次缓冲的对象集合有所不同）；如果缓冲数为1，则渲染的网格关系错乱（猜测是丢失了一些顶点数据）
