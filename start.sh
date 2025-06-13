@@ -1,14 +1,12 @@
 #!/bin/bash
 
 # Initialize flag variables
-REBUILD=false
 RECOMPILE_SHADERS=false
 
 # Function to display help information
 show_help() {
     echo "Usage: $0 [OPTIONS]"
     echo "Options:"
-    echo "  -b    Rebuild the project"
     echo "  -s    Recompile all shader files"
     echo "  -h    Show this help message"
 }
@@ -16,9 +14,6 @@ show_help() {
 # Parse command-line options
 while getopts "bsh" opt; do
   case $opt in
-    b)
-      REBUILD=true
-      ;;
     s)
       RECOMPILE_SHADERS=true
       ;;
@@ -37,22 +32,16 @@ cd "$(dirname "$0")"
 
 # Check if the build directory exists
 if [ ! -d "build" ]; then
-    REBUILD=true
+    mkdir build
 fi
 
-# Decide whether to rebuild based on the REBUILD flag
-if [ "$REBUILD" = true ]; then
-  rm -rf build
-  mkdir build
-  cd build
-  cmake ..
-  cmake --build .
-
-  if [ $? -ne 0 ]; then
-    exit 1
-  fi
-  cd ..
+cd build
+cmake ..
+cmake --build .
+if [ $? -ne 0 ]; then
+  exit 1
 fi
+cd ..
 
 # Decide whether to recompile shaders based on the -s option
 if [ "$RECOMPILE_SHADERS" = true ]; then
