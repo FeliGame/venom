@@ -218,6 +218,18 @@ private:
     void drawcall();
     void mainLoop();
     void cleanup();
+
+    // ShadowMap功能（还需要配合着色器添加descriptor_set及其layout）
+
+    VkRenderPass _shadow_render_pass;
+    VkFramebuffer _shadow_framebuffer;
+    AllocatedImage _shadow_image;
+    AllocatedBuffer _light_space_buffer;
+
+    void init_shadow_map(); 
+    void init_shadow_render_pass();
+    void init_shadow_framebuffer();
+    void init_shadow_pipeline();
 };
 
 #endif // VK_ENGINE_H

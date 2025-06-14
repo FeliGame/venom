@@ -61,6 +61,13 @@ struct GPUCameraData
     glm::vec4 camPos;
 };
 
+// ShadowMap: 光照空间数据
+struct GPULightSpaceData
+{
+    glm::mat4 lightView;
+    glm::mat4 lightProj;
+};
+
 // 传递到片元着色器，GPU传入数据建议只包含vec4和mat4类型，并且需要手动对齐到GPU支持
 struct GPUSceneData
 {

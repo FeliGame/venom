@@ -9,12 +9,20 @@ layout (location = 3) in vec2 vTexCoord;
 layout (location = 0) out vec4 objectLight;
 layout (location = 1) out vec2 texCoord;
 layout (location = 2) out float z;    // 屏幕中心到目标面渲染距离
+layout (location = 3) out vec4 fragPosLightSpace; // ShadowMap：顶点在光照空间的位置
+layout (location = 4) out vec3 fragNormal;
 
 layout(set = 0, binding = 0) uniform  CameraBuffer{
     mat4 view;
     mat4 proj;
     vec4 camPos;    // 相机位置
 } cameraData; // 顶点着色器只需要前四项
+
+// ShadowMap：光照空间的视图和投影矩阵
+layout(set = 0, binding = 2) uniform LightSpaceBuffer {
+    mat4 lightView;
+    mat4 lightProj;
+} lightSpaceData;
 
 struct ObjectData{
     mat4 model;
@@ -35,4 +43,11 @@ void main()
     gl_Position = cameraData.proj * viewPos;
     texCoord = vTexCoord;
     z = viewPos.z / viewPos.w;
+
+    // ShadowMap
+    objectLight = objectBuffer.objects[gl_InstanceIndex].objectLight;
+    // 计算顶点在光照空间的位置
+    fragPosLightSpace = lightSpaceData.lightProj * lightSpaceData.lightView * modelMatrix * vec4(vPosition, 1.0);
+    // 传递法线信息，进行模型矩阵变换并归一化
+    fragNormal = normalize(mat3(transpose(inverse(modelMatrix))) * vNormal); 
 }

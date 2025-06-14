@@ -2,7 +2,7 @@
 
 int main()
 {
-    VenomApp* app = new VenomApp();
+    static VenomApp* app = new VenomApp();
 
     try
     {

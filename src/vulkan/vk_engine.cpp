@@ -327,7 +327,7 @@ bool VenomApp::load_shader_module(const std::string &filePath, VkShaderModule *o
     // check that the creation goes well.
     VkShaderModule shaderModule;
     if (vkCreateShaderModule(_device, &createInfo, nullptr, &shaderModule) != VK_SUCCESS)
-    {
+    {   
         return false;
     }
     *outShaderModule = shaderModule;
@@ -671,7 +671,10 @@ void VenomApp::init_descriptor_pool()
             {VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, UNIFORM_BUFFERS_CNT},
             {VK_DESCRIPTOR_TYPE_STORAGE_BUFFER, UNIFORM_BUFFERS_CNT},
             // 着色器读取纹理时将image和sampler一起读取
-            {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, UNIFORM_BUFFERS_CNT}};
+            {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, UNIFORM_BUFFERS_CNT},
+            // ShadowMap采样器
+            {VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, UNIFORM_BUFFERS_CNT},
+        };
     VkDescriptorPoolCreateInfo pool_info = {
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
         .flags = 0,
@@ -683,12 +686,15 @@ void VenomApp::init_descriptor_pool()
 
 void VenomApp::init_descriptor_set_layouts()
 {
-    // binding for camera data at layout 0
+    // set 0
+    // binding 0
     VkDescriptorSetLayoutBinding cameraBind = vkinit::descriptorset_layout_binding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT, 0);
-    // binding for scene data at layout 1
+    // binding 1
     VkDescriptorSetLayoutBinding sceneBind = vkinit::descriptorset_layout_binding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, VK_SHADER_STAGE_FRAGMENT_BIT, 1);
-    VkDescriptorSetLayoutBinding bindings[] = {cameraBind, sceneBind};
-    VkDescriptorSetLayoutCreateInfo set0info = vkinit::descriptorset_layout_create_info(sizeof(bindings) / sizeof(VkDescriptorSetLayoutBinding), bindings);
+    // binding 2
+    VkDescriptorSetLayoutBinding lightSpaceBind = vkinit::descriptorset_layout_binding(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, VK_SHADER_STAGE_VERTEX_BIT, 2);
+    VkDescriptorSetLayoutBinding bindings0[] = {cameraBind, sceneBind, lightSpaceBind};
+    VkDescriptorSetLayoutCreateInfo set0info = vkinit::descriptorset_layout_create_info(sizeof(bindings0) / sizeof(VkDescriptorSetLayoutBinding), bindings0);
     vkCreateDescriptorSetLayout(_device, &set0info, nullptr, &_global_set_layout);
 
     // 使用StorageBuffer存储场景所有对象矩阵
@@ -696,9 +702,13 @@ void VenomApp::init_descriptor_set_layouts()
     VkDescriptorSetLayoutCreateInfo set1info = vkinit::descriptorset_layout_create_info(1, &objectBind);
     vkCreateDescriptorSetLayout(_device, &set1info, nullptr, &_object_set_layout);
 
-    // 创建纹理的SetLayout
+    // set 2
+    // binding 0
     VkDescriptorSetLayoutBinding textureBind = vkinit::descriptorset_layout_binding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 0);
-    VkDescriptorSetLayoutCreateInfo set2info = vkinit::descriptorset_layout_create_info(1, &textureBind);
+    // binding 1
+    VkDescriptorSetLayoutBinding shadowBind = vkinit::descriptorset_layout_binding(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, VK_SHADER_STAGE_FRAGMENT_BIT, 1);
+    VkDescriptorSetLayoutBinding bindings2[] = {textureBind, shadowBind};
+    VkDescriptorSetLayoutCreateInfo set2info = vkinit::descriptorset_layout_create_info(sizeof(bindings2) / sizeof(VkDescriptorSetLayoutBinding), bindings2);
     vkCreateDescriptorSetLayout(_device, &set2info, nullptr, &_single_texture_set_layout);
 
     _main_deletion_queue.push_function([&]()
@@ -716,6 +726,8 @@ void VenomApp::init_descriptor_sets()
     // 多重缓冲共享scene_buffer，因此该buffer不属于FrameData
     const size_t sceneParamBufferSize = MAX_FRAMES_IN_FLIGHT * pad_uniform_buffer_size(sizeof(GPUSceneData));
     _scene_parameter_buffer = create_buffer(sceneParamBufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
+    
+    _light_space_buffer = create_buffer(sizeof(GPULightSpaceData), VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU);
 
     for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
     {
@@ -759,12 +771,20 @@ void VenomApp::init_descriptor_sets()
             .range = sizeof(GPUSceneData)};
         VkWriteDescriptorSet sceneWrite = vkinit::write_descriptor_buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC, _frames[i].globalDescriptorSet, &sceneInfo, 1);
 
-        VkWriteDescriptorSet setWrites[] = {cameraWrite, sceneWrite, objectWrite};
+        VkDescriptorBufferInfo lightSpaceInfo{
+            .buffer = _light_space_buffer._buffer,
+            .offset = 0,
+            .range = sizeof(GPULightSpaceData)
+        };
+        VkWriteDescriptorSet lightSpaceWrite = vkinit::write_descriptor_buffer(VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER, _frames[i].globalDescriptorSet, &lightSpaceInfo, 2);
+
+        VkWriteDescriptorSet setWrites[] = {cameraWrite, sceneWrite, objectWrite, lightSpaceWrite};
         vkUpdateDescriptorSets(_device, sizeof(setWrites) / sizeof(VkWriteDescriptorSet), setWrites, 0, nullptr);
     }
     _main_deletion_queue.push_function([&]()
                                        {
             vmaDestroyBuffer(_allocator, _scene_parameter_buffer._buffer, _scene_parameter_buffer._allocation);
+            vmaDestroyBuffer(_allocator, _light_space_buffer._buffer, _light_space_buffer._allocation);
             for (int i = 0; i < MAX_FRAMES_IN_FLIGHT; i++)
             {
                 vmaDestroyBuffer(_allocator, _frames[i].cameraBuffer._buffer, _frames[i].cameraBuffer._allocation);
@@ -777,7 +797,22 @@ void VenomApp::init_descriptor_sets()
     vkCreateSampler(_device, &texturedSamplerInfo, nullptr, &textureSampler);
     _main_deletion_queue.push_function([=]()
                                        { vkDestroySampler(_device, textureSampler, nullptr); });
-    // 为已经创建的纹理图像分配DescriptorSet
+    // 阴影贴图采样器
+    VkSamplerCreateInfo shadowSamplerInfo = vkinit::sampler_create_info(VK_FILTER_LINEAR, VK_BORDER_COLOR_FLOAT_OPAQUE_WHITE);
+    shadowSamplerInfo.magFilter = VK_FILTER_LINEAR;
+    shadowSamplerInfo.minFilter = VK_FILTER_LINEAR;
+    shadowSamplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    shadowSamplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    shadowSamplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_CLAMP_TO_EDGE;
+    shadowSamplerInfo.compareEnable = VK_FALSE;  // if true, need extension support
+    shadowSamplerInfo.compareOp = VK_COMPARE_OP_LESS;
+    shadowSamplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+    VkSampler shadowSampler;
+    vkCreateSampler(_device, &shadowSamplerInfo, nullptr, &shadowSampler);
+    _main_deletion_queue.push_function([=]()
+                                       { vkDestroySampler(_device, shadowSampler, nullptr); });
+    
+    // 为已经创建的纹理图像和阴影分配同一DescriptorSet2
     VkDescriptorSetAllocateInfo textureSetAlloc = {
         .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO,
         .pNext = nullptr,
@@ -786,13 +821,23 @@ void VenomApp::init_descriptor_sets()
         .pSetLayouts = &_single_texture_set_layout};
     Material *texturedMat = __render_system.get_material(_default_material_name); // 创建图形管线时指定
     vkAllocateDescriptorSets(_device, &textureSetAlloc, &texturedMat->textureSet);
-    // 将纹理采样器和纹理图像混合在一起，故为COMBINED_IMAGE_SAMPLER
+    // 将纹理采样器和纹理图像混合在一起，故为COMBINED_IMAGE_SAMPLER bind = 0
     VkDescriptorImageInfo imageBufferInfo{
         .sampler = textureSampler,
         .imageView = _loaded_textures["minecraft"].imageView,
         .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL};
     VkWriteDescriptorSet textureWrite = vkinit::write_descriptor_image(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, texturedMat->textureSet, &imageBufferInfo, 0);
-    vkUpdateDescriptorSets(_device, 1, &textureWrite, 0, nullptr);
+    
+    // 阴影贴图采样器和阴影图像信息 bind = 1
+    VkDescriptorImageInfo shadowImageBufferInfo{
+        .sampler = shadowSampler,
+        .imageView = _shadow_image.imageView,
+        .imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+    };
+    VkWriteDescriptorSet shadowWrite = vkinit::write_descriptor_image(VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, texturedMat->textureSet, &shadowImageBufferInfo, 1);
+    
+    VkWriteDescriptorSet writes[] = {textureWrite, shadowWrite};
+    vkUpdateDescriptorSets(_device, sizeof(writes) / sizeof(VkWriteDescriptorSet), writes, 0, nullptr);
 }
 
 // 初始化Vulkan对象
@@ -820,6 +865,7 @@ void VenomApp::initVulkan()
     init_device_allocator_queue(vkb_inst);
     init_swapchain();
     init_depth_image();
+    init_shadow_map();
     init_command_pool_and_queue();
     init_render_pass();
     init_framebuffers();
@@ -832,6 +878,11 @@ void VenomApp::initVulkan()
     load_texture();
     load_meshes();
     init_descriptor_sets(); // 阴影映射加入了一个采样器（set = 2, binding = 1）
+
+    // ShadowMap功能
+    init_shadow_render_pass();
+    init_shadow_framebuffer();
+    init_shadow_pipeline();
 
     // 14.通过meshes和materials布置场景
     __render_system.init_scene();
@@ -864,6 +915,20 @@ void VenomApp::update_render_resource(FrameData &current_frame)
         objectSSBO[i].normal = glm::vec4(__renderables[i].normal, 1.f);
     }
     vmaUnmapMemory(_allocator, current_frame.objectBuffer._allocation);
+
+    // ShadowMap: 更新光照空间数据
+    GPULightSpaceData lightSpaceData;
+    // 这里需要根据实际情况计算光照空间的视图和投影矩阵
+    // 示例：假设光源位置和方向
+    glm::vec3 lightPos = glm::vec3(10.0f, 10.0f, 10.0f);
+    glm::vec3 lightDir = glm::normalize(-lightPos);
+    lightSpaceData.lightView = glm::lookAt(lightPos, lightPos + lightDir, glm::vec3(0.0f, 1.0f, 0.0f));
+    lightSpaceData.lightProj = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 1.0f, 50.0f);
+
+    void *lightSpaceDataPtr;
+    vmaMapMemory(_allocator, _light_space_buffer._allocation, &lightSpaceDataPtr);
+    memcpy(lightSpaceDataPtr, &lightSpaceData, sizeof(GPULightSpaceData));
+    vmaUnmapMemory(_allocator, _light_space_buffer._allocation);
 }
 
 // 将更新数据拷贝/映射到缓冲区 -> (管线变化时)重新绑定材质对应的管线及描述符集合
@@ -1052,4 +1117,209 @@ void VenomApp::cleanup()
         glfwDestroyWindow(__window);
         glfwTerminate();
     }
+}
+
+// ShadowMap功能
+
+// 初始化阴影贴图和图像视图
+void VenomApp::init_shadow_map()
+{
+    // 创建阴影贴图图像
+    VkImageCreateInfo shadowImageInfo = vkinit::image_create_info(
+        VK_FORMAT_D32_SFLOAT, // 深度格式
+        VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT,
+        _depth_extent
+    );
+    VmaAllocationCreateInfo shadowImageAllocInfo = {
+        .usage = VMA_MEMORY_USAGE_GPU_ONLY,
+        .requiredFlags = VkMemoryPropertyFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
+    };
+    vmaCreateImage(_allocator, &shadowImageInfo, &shadowImageAllocInfo, &_shadow_image.image, &_shadow_image.allocation, nullptr);
+
+    // 创建阴影贴图图像视图
+    VkImageViewCreateInfo shadowImageViewInfo = vkinit::image_view_create_info(
+        VK_FORMAT_D32_SFLOAT,
+        _shadow_image.image,
+        VK_IMAGE_ASPECT_DEPTH_BIT
+    );
+    VK_CHECK(vkCreateImageView(_device, &shadowImageViewInfo, nullptr, &_shadow_image.imageView));
+
+    _main_deletion_queue.push_function([=]()
+                                       {
+            vkDestroyImageView(_device, _shadow_image.imageView, nullptr);
+            vmaDestroyImage(_allocator, _shadow_image.image, _shadow_image.allocation);
+        });
+
+    immediate_submit([&](VkCommandBuffer cmd) {
+        VkImageSubresourceRange range {
+            .aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT,
+            .baseMipLevel = 0,
+            .levelCount = 1,
+            .baseArrayLayer = 0,
+            .layerCount = 1
+        };
+
+        // 先转换到深度模板附件最优布局
+        VkImageMemoryBarrier imageBarrier_toDepth = {
+            .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER,
+            .srcAccessMask = 0,
+            .dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+            .oldLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+            .newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+            .image = _shadow_image.image,
+            .subresourceRange = range,
+        };
+        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageBarrier_toDepth);
+
+        // 再转换到着色器只读最优布局
+        VkImageMemoryBarrier imageBarrier_toReadable = imageBarrier_toDepth;
+        imageBarrier_toReadable.oldLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        imageBarrier_toReadable.newLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        imageBarrier_toReadable.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+        imageBarrier_toReadable.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+        vkCmdPipelineBarrier(cmd, VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, nullptr, 0, nullptr, 1, &imageBarrier_toReadable);
+    });
+}
+
+// 初始化阴影渲染通道
+void VenomApp::init_shadow_render_pass()
+{
+    VkAttachmentDescription shadow_attachment = {
+        .format = VK_FORMAT_D32_SFLOAT,
+        .samples = VK_SAMPLE_COUNT_1_BIT,
+        .loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR,
+        .storeOp = VK_ATTACHMENT_STORE_OP_STORE,
+        .stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE,
+        .stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE,
+        .initialLayout = VK_IMAGE_LAYOUT_UNDEFINED,
+        .finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL
+    };
+
+    VkAttachmentReference shadow_attachment_ref = {
+        .attachment = 0,
+        .layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL
+    };
+
+    VkSubpassDescription subpass = {
+        .pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS,
+        .colorAttachmentCount = 0,
+        .pDepthStencilAttachment = &shadow_attachment_ref
+    };
+
+    VkSubpassDependency dependency = {
+        .srcSubpass = VK_SUBPASS_EXTERNAL,
+        .dstSubpass = 0,
+        .srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+        .dstStageMask = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT,
+        .srcAccessMask = VK_ACCESS_SHADER_READ_BIT,
+        .dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+        .dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT
+    };
+
+    VkRenderPassCreateInfo render_pass_info = {
+        .sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO,
+        .attachmentCount = 1,
+        .pAttachments = &shadow_attachment,
+        .subpassCount = 1,
+        .pSubpasses = &subpass,
+        .dependencyCount = 1,
+        .pDependencies = &dependency
+    };
+
+    VK_CHECK(vkCreateRenderPass(_device, &render_pass_info, nullptr, &_shadow_render_pass));
+    _main_deletion_queue.push_function([=]()
+                                       { vkDestroyRenderPass(_device, _shadow_render_pass, nullptr); });
+}
+
+// 初始化阴影帧缓冲和深度贴图
+void VenomApp::init_shadow_framebuffer()
+{
+    VkExtent2D shadow_extent = {2048, 2048};
+
+    VkImageCreateInfo shadow_image_info = vkinit::image_create_info(VK_FORMAT_D32_SFLOAT, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, {shadow_extent.width, shadow_extent.height, 1});
+    VmaAllocationCreateInfo shadow_alloc_info = {
+        .usage = VMA_MEMORY_USAGE_GPU_ONLY,
+        .requiredFlags = VkMemoryPropertyFlags(VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT)
+    };
+
+    vmaCreateImage(_allocator, &shadow_image_info, &shadow_alloc_info, &_shadow_image.image, &_shadow_image.allocation, nullptr);
+
+    VkImageViewCreateInfo shadow_view_info = vkinit::image_view_create_info(VK_FORMAT_D32_SFLOAT, _shadow_image.image, VK_IMAGE_ASPECT_DEPTH_BIT);
+    VK_CHECK(vkCreateImageView(_device, &shadow_view_info, nullptr, &_shadow_image.imageView));
+
+    VkFramebufferCreateInfo framebuffer_info = {
+        .sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO,
+        .renderPass = _shadow_render_pass,
+        .attachmentCount = 1,
+        .pAttachments = &_shadow_image.imageView,
+        .width = shadow_extent.width,
+        .height = shadow_extent.height,
+        .layers = 1
+    };
+
+    VK_CHECK(vkCreateFramebuffer(_device, &framebuffer_info, nullptr, &_shadow_framebuffer));
+
+    _main_deletion_queue.push_function([=]()
+                                       {
+            vkDestroyFramebuffer(_device, _shadow_framebuffer, nullptr);
+            vkDestroyImageView(_device, _shadow_image.imageView, nullptr);
+            vmaDestroyImage(_allocator, _shadow_image.image, _shadow_image.allocation);
+        });
+}
+
+// 初始化阴影渲染管线
+void VenomApp::init_shadow_pipeline()
+{
+    VkShaderModule vertShader;
+    if (!load_shader_module(string(SHADER_DIR) + "texture_vert.spv", &vertShader))
+    {
+        std::cout << "Error when building the shadow vertex shader module" << std::endl;
+    }
+
+    VkPipelineLayout shadowPipelineLayout;
+    VkDescriptorSetLayout shadowSetLayouts[] = {_global_set_layout, _object_set_layout};
+    VkPipelineLayoutCreateInfo shadow_pipeline_layout_info = vkinit::pipeline_layout_create_info();
+    shadow_pipeline_layout_info.setLayoutCount = 2;
+    shadow_pipeline_layout_info.pSetLayouts = shadowSetLayouts;
+    VK_CHECK(vkCreatePipelineLayout(_device, &shadow_pipeline_layout_info, nullptr, &shadowPipelineLayout));
+
+    VkPipeline shadowPipeline;
+    PipelineBuilder pipelineBuilder;
+
+    pipelineBuilder._vertexInputInfo = vkinit::vertex_input_state_create_info();
+    VertexInputDescription vertexDescription = Vertex::get_vertex_description();
+    pipelineBuilder._vertexInputInfo.pVertexAttributeDescriptions = vertexDescription.attributes.data();
+    pipelineBuilder._vertexInputInfo.vertexAttributeDescriptionCount = vertexDescription.attributes.size();
+    pipelineBuilder._vertexInputInfo.pVertexBindingDescriptions = vertexDescription.bindings.data();
+    pipelineBuilder._vertexInputInfo.vertexBindingDescriptionCount = vertexDescription.bindings.size();
+
+    pipelineBuilder._inputAssembly = vkinit::input_assembly_create_info(VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST);
+
+    pipelineBuilder._viewport.x = 0.0f;
+    pipelineBuilder._viewport.y = 0.0f;
+    pipelineBuilder._viewport.width = (float)_window_extent.width;
+    pipelineBuilder._viewport.height = (float)_window_extent.height;
+    pipelineBuilder._viewport.minDepth = 0.0f;
+    pipelineBuilder._viewport.maxDepth = 1.0f;
+    pipelineBuilder._scissor.offset = {0, 0};
+    pipelineBuilder._scissor.extent = _window_extent;
+
+    pipelineBuilder._rasterizer = vkinit::rasterization_state_create_info(VK_POLYGON_MODE_FILL, VK_CULL_MODE_FRONT_BIT, false);
+    pipelineBuilder._multisampling = vkinit::multisampling_state_create_info();
+    // pipelineBuilder._colorBlendAttachment = vkinit::color_blend_attachment_enable_state(VK_BLEND_FACTOR_ONE, VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA, VK_BLEND_OP_ADD);
+    pipelineBuilder._depthStencil = vkinit::depth_stencil_create_info(true, true, VK_COMPARE_OP_LESS);
+
+    pipelineBuilder._shaderStages.clear();
+    pipelineBuilder._shaderStages.push_back(
+        vkinit::pipeline_shader_stage_create_info(VK_SHADER_STAGE_VERTEX_BIT, vertShader));
+    pipelineBuilder._pipelineLayout = shadowPipelineLayout;
+
+    shadowPipeline = pipelineBuilder.build(_device, _shadow_render_pass);
+
+    vkDestroyShaderModule(_device, vertShader, nullptr);
+    _main_deletion_queue.push_function([=]()
+                                       {
+            vkDestroyPipeline(_device, shadowPipeline, nullptr);
+            vkDestroyPipelineLayout(_device, shadowPipelineLayout, nullptr);
+        });
 }
